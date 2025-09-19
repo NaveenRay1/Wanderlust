@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const review = require("./review");
 const Schema= mongoose.Schema;
 
 const listingSchema =new Schema({
@@ -23,8 +24,15 @@ const listingSchema =new Schema({
     },
     price : Number,
     location:String,
-    country:String
-
+    country:String,
+    reviews :[
+            {
+                //here we need to get the referene of the reviews as it is one to fewer so it's type should be
+                type : Schema.Types.ObjectId,
+                ref : "Review",
+                
+            }
+    ]
 })
 const Listing= mongoose.model("Listing",listingSchema);
 module.exports=Listing;
