@@ -2,14 +2,13 @@ const express = require("express");
 
 const app = express();
 const mongoose = require("mongoose");
-const Listing = require("./models/listing.js");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-
 const ExpressError = require("./utils/expressError.js");
+const session = require('express-session');
 const path = require("path");
-const { error } = require("console");
-const Review = require("./models/review.js");
+const { error } = require("console"); 
+const flash = require('connect-flash');
 app.use(methodOverride("_method"));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -19,6 +18,8 @@ app.use(express.static(path.join(__dirname, "/public")));
 const listings = require('./routes/listing.js');
 const reviews = require('./routes/review.js');
 const MONGO_URL = "mongodb://127.0.0.1:27017/WanderLust";
+
+
 main()
   .then(() => {
     console.log("connected to db");
@@ -30,6 +31,19 @@ main()
 async function main() {
   await mongoose.connect(MONGO_URL);
 }
+
+const sessionOptions = {
+    secret : "supersecret",
+    resave : false,
+    saveUninitialized : true,
+    cookie : {
+      expires : 7 * 24* 60 * 60 * 1000,
+      maaxAge : 7 * 24* 60 * 60 * 1000,
+      httpOnly : true,
+    }
+} ;
+app.use(session(sessionOptions));
+app.use(flash());
 app.listen(8080, (req, res) => {
   console.log("listening at port 8080");
 });
@@ -37,10 +51,12 @@ app.listen(8080, (req, res) => {
 app.get("/", (req, res) => {
   res.send("aggye swagat h aapka");
 });
-// validate function
 
-//validate for Schema
-
+//flas func
+app.use((req,res,next)=>{
+  res.locals.success = req.flash("success");
+  next();
+});
 app.use("/listings",listings);
 app.use("/listings/:id/reviews",reviews);
 app.all(/(.*)/, (req, res, next) => {

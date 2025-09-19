@@ -1,10 +1,10 @@
 const express = require('express');
-const router = express.Router();
+const router = express.Router({mergeParams:true});
 const {listingSchema, reviewSchema} = require("../schema.js");
 const wrapAsync = require("../utils/wrapAsync.js");
 const ExpressError = require("../utils/expressError.js");
 const Listing = require("../models/listing.js");
-const validateListing = (req,res,nex)=>{
+const validateListing = (req,res,next)=>{
   let {error} = listingSchema.validate(req.body);
   if(error){
     throw new ExpressError(400, error);
@@ -42,6 +42,7 @@ router.put("/:id", validateListing, wrapAsync( async (req, res) => {
  
  let { id } = req.params;
   await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+  req.flash("success" , "Listing Updated");
   res.redirect("/listings");
 }));
 // create post route
@@ -50,6 +51,7 @@ router.post(
   wrapAsync(async (req, res) => {
     let newListing = new Listing(req.body.listing);
     await newListing.save();
+    req.flash("success" , "New Listing Created");
     res.redirect("/listings");
   })
 );
@@ -65,7 +67,7 @@ router.delete("/:id", wrapAsync(async (req, res) => {
   await Listing.findByIdAndDelete(id);
 
 
-
+req.flash("success" , "Listing Deleted");
   res.redirect("/listings");
 
 }));
